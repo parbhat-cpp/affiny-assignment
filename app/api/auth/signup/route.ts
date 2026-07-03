@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     });
 
     const newUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const checkinResponse: Record<string, unknown> = { occurred: false, streakCount: 0, coinBalance: SIGNUP_REWARD_COINS, coinEarned: SIGNUP_REWARD_COINS };
 
     // Generate JWT token
     const token = generateToken({
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
           email: newUser[0].email,
           name: newUser[0].name,
         },
+        checkin: checkinResponse,
       },
       { status: 201 }
     );

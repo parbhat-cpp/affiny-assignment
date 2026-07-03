@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest",
+    "test:db:up": "docker compose -f docker-compose.test.yaml up -d --wait",
+    "test:db:down": "docker compose -f docker-compose.test.yaml down"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -22,6 +25,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/js-cookie": "^3.0.6",
     "@types/jsonwebtoken": "^9.0.10",
@@ -29,11 +34,15 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.3",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^1.0.0-rc.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.9"
   }
 }

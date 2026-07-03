@@ -41,12 +41,13 @@ export async function POST(request: NextRequest) {
     }
 
     const checkinDate = new Date().toISOString().split('T')[0];
+    const isUserSignedUpToday = user.createdAt.toISOString().split('T')[0] === checkinDate;
     const checkinResponse: Record<string, unknown> = { occurred: true };
 
     const userCheckinToday = await db.select().from(checkins).where(and(eq(checkins.userId, user.id), eq(checkins.checkinDate, checkinDate))).limit(1);
     const usrStat = await db.select().from(userStats).where(eq(userStats.userId, user.id)).limit(1);
 
-    if (userCheckinToday.length > 0) {
+    if (userCheckinToday.length > 0 || isUserSignedUpToday) {
       checkinResponse.occurred = false;
       checkinResponse.streakCount = usrStat[0].streak;
       checkinResponse.coinBalance = usrStat[0].coinBalance;
