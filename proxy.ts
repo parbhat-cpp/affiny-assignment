@@ -14,7 +14,7 @@ export const proxy = async (request: NextRequest) => {
 
   // Protected routes (like /app)
   if (pathname.startsWith('/app')) {
-    const token = request.cookies.get('authToken')?.value;
+    const token = request.cookies.get('token')?.value;
 
     if (!token || !verifyToken(token)) {
       return NextResponse.redirect(new URL('/', request.url));

@@ -26,7 +26,7 @@ export const verifyToken = (token: string): JWTPayload | null => {
 export const getAuthToken = async (): Promise<string | null> => {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('authToken')?.value;
+    const token = cookieStore.get('token')?.value;
     return token || null;
   } catch {
     return null;
@@ -35,7 +35,7 @@ export const getAuthToken = async (): Promise<string | null> => {
 
 export const clearAuthCookie = async () => {
   const cookieStore = await cookies();
-  cookieStore.delete('authToken');
+  cookieStore.delete('token');
 };
 
 export const getCurrentUser = async (): Promise<JWTPayload | null> => {

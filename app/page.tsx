@@ -46,6 +46,9 @@ export default function AuthPage() {
         return;
       }
 
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('checkin', JSON.stringify(data.checkin));
+
       // Redirect to app page on success
       router.push('/app');
     } catch (err) {
