@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Affiny Assignment
 
-## Getting Started
+Affiny is a Next.js app with JWT-based authentication, daily check-in rewards, and PostgreSQL persistence via Drizzle ORM.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 16 / React 19 / TypeScript
+- Drizzle ORM + PostgreSQL
+- JWT auth with `jsonwebtoken`
+- Password hashing with `bcryptjs`
+- Testing with Vitest, React Testing Library, and JSDOM
+- Docker for local and test databases
+
+## Project Structure
+
+- `app/page.tsx`: auth screen for sign in / sign up
+- `app/app/page.tsx`: protected app dashboard with stats and logout
+- `app/api/auth/*`: auth and account endpoints
+- `db/schema.ts`: database tables and enums
+- `lib/auth.ts` and `lib/password.ts`: auth helpers
+- `tests/setup/*`: test environment bootstrap and cleanup
+
+## Environment Variables
+
+Create a `.env` file for local development:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/affiny
+JWT_SECRET=replace-with-a-long-random-secret
+NODE_ENV=development
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=affiny
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For tests, create a `.env.test` file with test-specific values:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/affiny_test
+JWT_SECRET=replace-with-a-long-random-secret
+NODE_ENV=test
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=affiny_test
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. Set Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+By setting ```NODE_ENV``` docker will run specific environment accordingly
+```bash
+NODE_ENV=development | production
+```
+2. Execute compose up command
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For development
+```bash
+docker compose -f docker-compose.yaml up --watch
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+For production
+```bash
+docker compose -f docker-compose.yaml up
+```
 
-## Deploy on Vercel
+3. Open app container shell for db migration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+docker exec -it affiny_frontend sh
+npx drizzle-kit generate
+npx drizzle-kit migrate
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Access the app:
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Test Setup
+
+The test suite uses Vitest with a dedicated PostgreSQL container and a `.env.test` file.
+
+```bash
+npm run test:db:up
+npm test
+```
+
+To shut down the test database:
+
+```bash
+npm run test:db:down
+```
+
+To execute test cases:
+
+```bash
+npm run test
+```
+
+Test bootstrap behavior:
+
+- `tests/setup/global.ts` starts the test database and runs Drizzle migrations
+- `tests/setup/each.ts` clears tables before every test
+- `vitest.config.mts` loads `.env.test` automatically
+
+## Exposed Endpoints
+
+### Pages
+
+- `GET /` — authentication page with login and signup UI
+- `GET /app` — protected dashboard showing streak, balance, and earned coins
+
+### API
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/api/auth/signup` | Creates a user, awards signup coins, and sets the auth cookie |
+| `POST` | `/api/auth/login` | Authenticates a user, applies the daily check-in flow, and sets the auth cookie |
+| `POST` | `/api/auth/logout` | Clears the auth cookie |
+| `GET` | `/api/auth/me` | Returns the current authenticated user from the JWT cookie |
+| `DELETE` | `/api/auth/delete` | Deletes the current user and related records |
+
+### Auth Flow Notes
+
+- Auth is stored in an HTTP-only `token` cookie.
+- Signup awards `300` coins.
+- Daily login check-ins award `10` coins.
+- Check-in streaks reset when a day is missed.
+
+## Database Model
+
+- `users` — basic user profile and hashed password
+- `user_stats` — streak, balance, and last check-in date
+- `checkins` — daily check-in history
+- `coin_transactions` — coin ledger with transaction type and status
